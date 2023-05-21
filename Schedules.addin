@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type ="Application">
+		<Name>Schedules</Name>
+		<Assembly>Schedules.dll</Assembly>
+		<AddInId>63ebec03-1b2a-4416-9462-64ad13b6b949</AddInId>
+		<FullClassName>Schedules.App</FullClassName>
+		<Description>Manage schedules</Description>
+		<VendorId>KELONMYOSA</VendorId>
+		<VendorDescription>Vladislav Samoilenko, github.com/KELONMYOSA</VendorDescription>
+		<VisibilityMode>AlwaysVisible</VisibilityMode>
+	</AddIn>
+</RevitAddIns>

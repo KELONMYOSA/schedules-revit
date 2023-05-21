@@ -5,16 +5,17 @@
                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                    mc:Ignorable="d"
                    Topmost="True"
-                   Width="300" Height="Auto" SizeToContent="Height"
-                   d:DesignHeight="280" d:DesignWidth="300">
+                   Width="300" Height="400"
+                   d:DesignHeight="400" d:DesignWidth="300">
 
     <Grid x:Name="WindowGrid">
         <Grid.RowDefinitions>
+            <RowDefinition Height="120"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
 
-        <Button x:Name="BtnDuplicate" Grid.Row="1"
+        <Button x:Name="BtnDuplicate" Grid.Row="2"
                 Width="120"
                 Height="30"
                 Click="ButtonDuplicate"
@@ -28,11 +29,14 @@
                 Content=" Выбрать "
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12.5,15,0"/>
         <TextBox x:Name="FolderPath" Grid.Row="0"
-                Width="250"
+                Width="270"
                 Height="25"
                 Text="Выберите папку"
                 TextAlignment="Center"
                 IsReadOnly="True"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0"/>
+        <Label x:Name="Label2" Content="Ключевые спецификации:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,90,0,0" Width="200" Height="35" Grid.Row="0"/>
+        <ListBox x:Name="SchedulesBox" Grid.Row="1"
+                SelectionMode="Extended" Margin="15,0,15,0"/>
     </Grid>
 </Window>

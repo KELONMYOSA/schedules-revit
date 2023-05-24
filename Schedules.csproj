@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Remove="UserInterfaceDuplicateKeySchedules.xaml" />
+    <None Remove="UserInterfaceFilesSelection.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Include="UserInterfaceFilesSelection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserInterfaceDuplicateKeySchedules.xaml" />
   </ItemGroup>
 
@@ -51,6 +55,9 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="UserInterfaceFilesSelection.xaml.cs">
+      <SubType>Code</SubType>
     </Compile>
     <Compile Update="UserInterfaceDuplicateKeySchedules.xaml.cs">
       <SubType>Code</SubType>

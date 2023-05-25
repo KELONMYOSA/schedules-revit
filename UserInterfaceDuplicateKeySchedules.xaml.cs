@@ -37,6 +37,14 @@ namespace Schedules
             }
         }
 
+        public bool syncFiles
+        {
+            get
+            {
+                return (bool)SyncCheckbox.IsChecked;
+            }
+        }
+
         private void ButtonDuplicate(Object sender, EventArgs e)
         {
             if (SchedulesBox.SelectedItems.Count == 0)
@@ -57,11 +65,12 @@ namespace Schedules
 
         private void ButtonSelectFolder(Object sender, EventArgs e)
         {
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            FolderPicker folderBrowserDialog = new FolderPicker();
+            folderBrowserDialog.InputPath = Path.GetDirectoryName(doc.PathName);
+            if (folderBrowserDialog.ShowDialog() == true)
             {
-                string path = folderBrowserDialog.SelectedPath;
-                IList<string> revitFilesPaths = Directory.EnumerateFiles(path, "*.rvt", SearchOption.AllDirectories)
+                string path = folderBrowserDialog.ResultPath;
+                IList<string> revitFilesPaths = Directory.EnumerateFiles(path, "*.rvt", SearchOption.TopDirectoryOnly)
                     .Where(f => !f.Equals(doc.PathName)).ToList();
                 Dictionary<string, string> filenameToPath = new Dictionary<string, string>();
                 foreach (string revitFile in revitFilesPaths)

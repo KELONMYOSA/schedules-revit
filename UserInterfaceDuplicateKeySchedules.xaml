@@ -10,7 +10,7 @@
 
     <Grid x:Name="WindowGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="120"/>
+            <RowDefinition Height="150"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
@@ -35,7 +35,12 @@
                 TextAlignment="Center"
                 IsReadOnly="True"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0"/>
-        <Label x:Name="Label2" Content="Ключевые спецификации:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,90,0,0" Width="200" Height="35" Grid.Row="0"/>
+        <CheckBox x:Name="SyncCheckbox" Grid.Row="0" 
+                Width="200"
+                Height="25"
+                Content=" Файлы совместной работы"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,90,0,0"/>
+        <Label x:Name="Label2" Content="Ключевые спецификации:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="15,120,0,0" Width="200" Height="35" Grid.Row="0"/>
         <ListBox x:Name="SchedulesBox" Grid.Row="1"
                 SelectionMode="Extended" Margin="15,0,15,0"/>
     </Grid>

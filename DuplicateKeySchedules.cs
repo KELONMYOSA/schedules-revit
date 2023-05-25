@@ -35,8 +35,11 @@ namespace Schedules
             }
             else
             {
+                string resultMessage = "Измененные спецификации:\n";
+                
                 IList<string> revitFilesPaths = ui.selectedFiles;
                 IList<string> selectedSchedulesNames = ui.selectedSchedules;
+                bool syncFiles = ui.syncFiles;
 
                 IList<ViewSchedule> selectedSchedules = keySchedules.Where(v => selectedSchedulesNames.Contains(v.Name)).ToList();
 
@@ -254,21 +257,33 @@ namespace Schedules
                     }
                     if (changedSchedules.Count > 0)
                     {
-                        SyncWithoutRelinquishing(openedDoc);
+                        if (syncFiles)
+                        {
+                            SyncWithoutRelinquishing(openedDoc);
+                        }
+                        else
+                        {
+                            openedDoc.Save();
+                        }
 
-                        string outMessage = "Измененные спецификации в файле " + Path.GetFileName(openedDoc.PathName) + ":\n\n";
+                        string outMessage = Path.GetFileName(openedDoc.PathName) + ":\n";
                         foreach (string schedule in changedSchedules)
                         {
                             outMessage += "- " + schedule + "\n";
                         }
 
-                        MessageBox.Show(outMessage, "Успешно!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        resultMessage += "\n" + outMessage;
                     }
                     else
                     {
                         MessageBox.Show("В файле " + Path.GetFileName(openedDoc.PathName) + " спецификации для изменения не были найдены.", "Успешно!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     openedDoc.Close(false);
+                }
+                
+                if (!resultMessage.Equals("Измененные спецификации:\n"))
+                {
+                    MessageBox.Show(resultMessage, "Успешно!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 
                 return Result.Succeeded;

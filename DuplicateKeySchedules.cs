@@ -96,11 +96,15 @@ namespace Schedules
                         using (Transaction transaction = new Transaction(openedDoc))
                         {
                             //Список столбцов в таблице
-                            IList<int> fieldsInSchedule = new List<int>();
+                            IList<string> fieldsInSchedule = new List<string>();
                             for (int i = 0; i < schedule.Definition.GetFieldCount(); i++)
                             {
                                 ScheduleField field = schedule.Definition.GetField(i);
-                                fieldsInSchedule.Add(field.ParameterId.IntegerValue);
+                                try
+                                {
+                                    fieldsInSchedule.Add(openedDoc.GetElement(field.ParameterId).Name);
+                                }
+                                catch { }
                             }
                             //Список столбцов возможных для добавления
                             IList<SchedulableField> schedulableFields = schedule.Definition.GetSchedulableFields();
@@ -112,23 +116,31 @@ namespace Schedules
                                 schedulableFieldsParamId.Add(paramID.IntegerValue);
                                 try
                                 {
-                                    schedulableFieldsParamName.Add(doc.GetElement(paramID).Name);
+                                    schedulableFieldsParamName.Add(openedDoc.GetElement(paramID).Name);
                                 }
                                 catch { }
                             }
                             //Добавление недостающих столбцов
                             foreach (int columnId in mainScheduleColumns[schedule.Name].Keys)
                             {
-                                if (schedulableFieldsParamId.Contains(columnId) && !fieldsInSchedule.Contains(columnId))
+                                string columnName = mainScheduleColumns[schedule.Name][columnId];
+                                if (schedulableFieldsParamName.Contains(columnName) && !fieldsInSchedule.Contains(columnName))
                                 {
-                                    ElementId elemId = new ElementId(columnId);
+                                    ElementId elemId = new FilteredElementCollector(openedDoc)
+                                        .OfClass(typeof(ParameterElement))
+                                        .Where(p => p.Name.Equals(columnName))
+                                        .Select(p => p.Id)
+                                        .FirstOrDefault();
 
-                                    transaction.Start("Добавление колонки");
-                                    schedule.Definition.AddField(ScheduleFieldType.Instance, elemId);
-                                    transaction.Commit();
-                                    if (!changedSchedules.Contains(schedule.Name))
+                                    if (elemId != null)
                                     {
-                                        changedSchedules.Add(schedule.Name);
+                                        transaction.Start("Добавление колонки");
+                                        schedule.Definition.AddField(ScheduleFieldType.Instance, elemId);
+                                        transaction.Commit();
+                                        if (!changedSchedules.Contains(schedule.Name))
+                                        {
+                                            changedSchedules.Add(schedule.Name);
+                                        }
                                     }
                                 }
                             }
@@ -175,7 +187,19 @@ namespace Schedules
                                             {
                                                 if (parameter.StorageType == StorageType.ElementId)
                                                 {
-                                                    parameter.Set(paramMain.AsElementId());
+                                                    if (paramMain.AsElementId().IntegerValue != -1)
+                                                    {
+                                                        ImageType imageFromTemplate = doc.GetElement(paramMain.AsElementId()) as ImageType;
+                                                        ElementId imageIdInCurDocForSelection = new FilteredElementCollector(openedDoc)
+                                                                    .OfCategory(BuiltInCategory.OST_RasterImages)
+                                                                    .Where(img => img.Name.Equals(imageFromTemplate.Name))
+                                                                    .Select(img => img.Id)
+                                                                    .FirstOrDefault();
+                                                        if (imageIdInCurDocForSelection != null)
+                                                        {
+                                                            parameter.Set(imageIdInCurDocForSelection);
+                                                        }
+                                                    } 
                                                 }
                                                 else if (parameter.StorageType == StorageType.Integer)
                                                 {
@@ -213,11 +237,53 @@ namespace Schedules
                                                 transaction.Start("Замена значений в строке");
                                                 if (parameter.StorageType == StorageType.ElementId)
                                                 {
-                                                    if (parameter.AsElementId() != paramMain.AsElementId())
+                                                    if (paramMain.AsElementId().IntegerValue != -1)
                                                     {
-                                                        wasChanged = true;
-                                                        parameter.Set(paramMain.AsElementId());
+                                                        ImageType imageFromTemplate = doc.GetElement(paramMain.AsElementId()) as ImageType;
+                                                        if (parameter.AsElementId().IntegerValue != -1)
+                                                        {
+                                                            ImageType curDocImage = openedDoc.GetElement(parameter.AsElementId()) as ImageType;
+                                                            if (curDocImage.Name != imageFromTemplate.Name)
+                                                            {
+                                                                ElementId imageIdInCurDocForSelection = new FilteredElementCollector(openedDoc)
+                                                                    .OfCategory(BuiltInCategory.OST_RasterImages)
+                                                                    .Where(img => img.Name.Equals(imageFromTemplate.Name))
+                                                                    .Select(img => img.Id)
+                                                                    .FirstOrDefault();
+                                                                if (imageIdInCurDocForSelection != null)
+                                                                {
+                                                                    parameter.Set(imageIdInCurDocForSelection);
+                                                                }
+                                                                else
+                                                                {
+                                                                    parameter.Set(new ElementId(-1));
+                                                                }
+                                                                wasChanged = true;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            ElementId imageIdInCurDocForSelection = new FilteredElementCollector(openedDoc)
+                                                                    .OfCategory(BuiltInCategory.OST_RasterImages)
+                                                                    .Where(img => img.Name.Equals(imageFromTemplate.Name))
+                                                                    .Select(img => img.Id)
+                                                                    .FirstOrDefault();
+                                                            if (imageIdInCurDocForSelection != null)
+                                                            {
+                                                                parameter.Set(imageIdInCurDocForSelection);
+                                                            }
+                                                            wasChanged = true;
+                                                        }
+                                                    } 
+                                                    else
+                                                    {
+                                                        if (parameter.AsElementId().IntegerValue != -1)
+                                                        {
+                                                            wasChanged = true;
+                                                            parameter.Set(new ElementId(-1));
+                                                        }
                                                     }
+                                                    
                                                 }
                                                 else if (parameter.StorageType == StorageType.Integer)
                                                 {

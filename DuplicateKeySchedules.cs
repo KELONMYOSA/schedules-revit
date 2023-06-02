@@ -35,6 +35,14 @@ namespace Schedules
             }
             else
             {
+                // Сбор изображений в шаблоне
+                IList<ImageType> imagesInDocElem = new FilteredElementCollector(doc)
+                    .OfCategory(BuiltInCategory.OST_RasterImages)
+                    .WhereElementIsElementType()
+                    .Cast<ImageType>()
+                    .ToList();
+
+                // Изменение спецификаций
                 string resultMessage = "Измененные спецификации:\n";
                 
                 IList<string> revitFilesPaths = ui.selectedFiles;
@@ -82,6 +90,50 @@ namespace Schedules
                 foreach (string path in revitFilesPaths)
                 {
                     Document openedDoc = OpenDocumentWithoutWorksets(app, ModelPathUtils.ConvertUserVisiblePathToModelPath(path));
+
+                    // Замена изображений
+                    IEnumerable<ImageType> imagesInCurDoc = new FilteredElementCollector(openedDoc)
+                        .OfCategory(BuiltInCategory.OST_RasterImages)
+                        .WhereElementIsElementType()
+                        .Cast<ImageType>();
+                    IList<string> imagesInCurDocName = imagesInCurDoc.Select(e => e.Name).ToList();
+                    using (Transaction transaction = new Transaction(openedDoc))
+                    {
+                        foreach (ImageType image in imagesInDocElem)
+                        {
+                            System.Drawing.Bitmap imageBitMap = image.GetImage();
+                            string imageTmpPath = Path.Combine(Path.GetTempPath(), image.Name + ".jpeg");
+                            imageBitMap.Save(imageTmpPath);
+
+                            transaction.Start("Изменение изображения");
+
+                            if (imagesInCurDocName.Contains(image.Name))
+                            {
+                                // Удаляем изображение
+                                ImageType changingImage = imagesInCurDoc.First(e => e.Name == image.Name);
+                                openedDoc.Delete(changingImage.Id);
+                            }
+
+                            // Добавляем изображение
+                            // Revit 2023
+                            ImageTypeOptions imageOptions = new ImageTypeOptions(imageTmpPath, false, ImageTypeSource.Import);
+                            ImageType newImage = ImageType.Create(openedDoc, imageOptions);
+                            newImage.Name = image.Name;
+
+                            // Revit 2020
+                            // ImageType newImage = ImageType.Create(openedDoc, imageTmpPath);
+                            // newImage.Name = image.Name;
+
+                            transaction.Commit();
+
+                            if (File.Exists(imageTmpPath))
+                            {
+                                File.Delete(imageTmpPath);
+                            }
+                        }
+                    }
+
+                    // Изменение спецификаций
                     IList<string> changedSchedules = new List<string>();
 
                     IList<ViewSchedule> schedulesInDoc = new FilteredElementCollector(openedDoc)

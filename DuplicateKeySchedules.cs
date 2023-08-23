@@ -204,6 +204,7 @@ namespace Schedules
                                 rowNames.Add(row.LookupParameter("Ключевое имя").AsString());
                             }
                             int nRows = rowNames.Count;
+                            IList<string> rowNamesInMain = new List<string>();
                             //Добавление недостающих строк
                             foreach (IList<Parameter> rowParams in mainScheduleRowParams[schedule.Name])
                             {
@@ -213,6 +214,7 @@ namespace Schedules
                                     if (rowParam.Definition.Name.Equals("Ключевое имя"))
                                     {
                                         rowNameInMain = rowParam.AsString();
+                                        rowNamesInMain.Append(rowNameInMain);
                                     }
                                 }
                                 if (!rowNames.Contains(rowNameInMain))
@@ -369,6 +371,17 @@ namespace Schedules
                                             }
                                         }
                                     }
+                                }
+                            }
+                            //Удаление лишних строк
+                            foreach (Element row in rows)
+                            {
+                                string rowName = row.LookupParameter("Ключевое имя").AsString();
+                                if (!rowNamesInMain.Contains(rowName))
+                                {
+                                    transaction.Start("Удаление строки");
+                                    openedDoc.Delete(row.Id);
+                                    transaction.Commit();
                                 }
                             }
                         }
